@@ -1,0 +1,2 @@
+# This file handles the conversion of the account file to markdown using Nougat. The actual conversion will take place on the cloud.
+# This file will then save the returned markdown in the tempStorage file.
