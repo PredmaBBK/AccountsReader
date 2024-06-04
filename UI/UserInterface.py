@@ -36,6 +36,7 @@ search_entry.grid(column=0, row=1, columnspan=2, padx=10, pady=10)
 
 def search_action():
     search_query = search_entry.get()
+
     if search_query == '' or search_query == 'Enter a company name here':
         messagebox.showwarning("Input Error", "Please enter a valid company name.")
     else:
@@ -67,21 +68,25 @@ search_entry.bind('<FocusOut>', on_focus_out)
 search_button = Button(root, text="Search", command=search_action)
 search_button.grid(row=1, column=1, padx=10, pady=10)
 
+#Create the frame for the checkboxes
+frame = Frame(root)
+frame.grid(row=2, column=0, padx=10, pady=10)
+
+# Function to clear all checkboxes in the given frame
+def clear_checkboxes(frame):
+    for widget in frame.winfo_children():
+        widget.destroy()
+
+
 # Display the companies for the user to select from
 def display_companies(companies):
 
-    #Create the frame for the checkboxes
-    frame = Frame(root)
-    frame.grid(row=2, column=0, padx=10, pady=10)
+    clear_checkboxes(frame)
 
     for company in companies:
         var = IntVar()
         chk = Checkbutton(frame, text=company[0], variable=var)
         chk.pack(anchor='w')
-
-
-
-
 
 
 # Start the Tkinter event loop
