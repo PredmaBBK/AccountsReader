@@ -41,7 +41,33 @@ def company_search_results(company_string):
 
         links.append(company_pair)
 
+    driver.close()
     return links
 
 
 # Functionality to download and save the PDFs for those companies.
+def company_reports_download(company_link, company_name, save_location):
+    driver.get(company_link)
+    print("Retrieving files from " + company_link)
+
+    #Open up each of these pages and click on accounts checkbox to show the filing type (we just want AA accounts)
+    accountButton = driver.find_element(By.ID, "filter-category-accounts")
+    accountButton.click()
+    showFileType = driver.find_element(By.ID, "show-filing-type")
+    showFileType.click()
+
+    filingTable = driver.find_element(By.ID, "fhTable")
+    rows = filingTable.find_elements(By.CSS_SELECTOR, "tr")
+    for row in rows:
+        try:
+            account = WebDriverWait(driver, 10).until(EC.presence_of_element_located(By.ID, "filing-type sft-toggled"))
+            if account.text.strip() == "AA":
+                downloadLink = row.find_element(By.CSS_SELECTOR, "a")
+                downloadLink.click()
+        except:
+            print("Error")
+
+
+
+
+
