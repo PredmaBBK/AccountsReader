@@ -12,18 +12,15 @@ from selenium.webdriver.support import expected_conditions as EC
 import random
 import time
 options = Options()
-options.add_experimental_option('prefs', {
-"download.default_directory": "/Users/predm/OneDrive/Documents/Birkbeck/MSc Project/Python practice/AccountsTemp", #Change default directory for downloads
-"download.prompt_for_download": False, #To auto download the file
-"download.directory_upgrade": True,
-"plugins.always_open_pdf_externally": True #It will not show PDF directly in chrome
-})
+
 options.add_argument("--headless")
-driver = webdriver.Chrome(options= options)
+
 
 # Functionality to return the top list of company names from the user's request.
 # This is returned as a list of pairs of company names and their links
 def company_search_results(company_string):
+    driver = webdriver.Chrome(options= options)
+
     company_string = company_string.replace(' ', '+')
     search_string = "https://find-and-update.company-information.service.gov.uk/search?q=" + company_string
     driver.get(search_string)
@@ -41,14 +38,22 @@ def company_search_results(company_string):
 
         links.append(company_pair)
 
-    driver.close()
+    driver.quit()
     return links
 
 
 # Functionality to download and save the PDFs for those companies.
 def company_reports_download(company_link, company_name, save_location):
+    options.add_experimental_option('prefs', {
+"download.default_directory": save_location, #Change default directory for downloads
+"download.prompt_for_download": False, #To auto download the file
+"download.directory_upgrade": True,
+"plugins.always_open_pdf_externally": True #It will not show PDF directly in chrome
+})
+    
+    driver = webdriver.Chrome(options= options)
     driver.get(company_link)
-    print("Retrieving files from " + company_link)
+    print("Retrieving files for " + company_name)
 
     #Open up each of these pages and click on accounts checkbox to show the filing type (we just want AA accounts)
     accountButton = driver.find_element(By.ID, "filter-category-accounts")
@@ -58,15 +63,30 @@ def company_reports_download(company_link, company_name, save_location):
 
     filingTable = driver.find_element(By.ID, "fhTable")
     rows = filingTable.find_elements(By.CSS_SELECTOR, "tr")
-    for row in rows:
-        try:
-            account = WebDriverWait(driver, 10).until(EC.presence_of_element_located(By.ID, "filing-type sft-toggled"))
-            if account.text.strip() == "AA":
-                downloadLink = row.find_element(By.CSS_SELECTOR, "a")
-                downloadLink.click()
-        except:
-            print("Error")
 
+    download_links = []
+
+# Iterate over the rows, skipping the first row (if it contains headers)
+    for row in rows[1:5]:
+        try:
+            # Find the element with class "filing-type" and text "AA" within the current row
+            account = row.find_element(By.XPATH, ".//td[@class='filing-type sft-toggled']")
+            time.sleep(1)
+            # Check if the text is "AA"
+            if account.text.strip() == "AA":
+                # Find the download link within the current row
+                download_link_element = row.find_element(By.CSS_SELECTOR, "a")
+                # Download the file
+                download_links.append(download_link_element.get_attribute("href"))
+                
+
+        except Exception as e:
+            print("Error:", e)
+
+
+    driver.quit()
+
+    return download_links
 
 
 
