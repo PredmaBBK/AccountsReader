@@ -95,7 +95,8 @@ def company_PDFs(event=None):
     else:
         print(selected_companies)
         for var, name, link in selected_companies:
-            scraper.company_reports_download(link, name, file_location)
+            links = scraper.company_reports_download(link, name, file_location)
+            print(links)
 
 # Function to get the user to select a filesave location
 def save_file_dialog():
@@ -118,9 +119,6 @@ selection_button.bind("<Button-1>", lambda event: company_PDFs(event))
 #Create the frame for the checkboxes
 checkbox_frame = Frame(root)
 checkbox_frame.grid(row=2, column=0, padx=10, pady=10)
-
-
-
 
 
 
