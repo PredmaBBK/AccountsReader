@@ -9,8 +9,11 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import random
+from datetime import datetime
 import time
+import requests
+import os
+import GlobalVars as GV
 options = Options()
 
 options.add_argument("--headless")
@@ -32,8 +35,8 @@ def company_search_results(company_string):
     for company in companies:
 
         h3 = company.find_element(By.CSS_SELECTOR, "h3")
-        a = h3.find_element(By.CSS_SELECTOR, "a")
-        link = a.get_attribute("href") + "/filing-history"
+        a = h3.find_element(By.CSS_SELECTOR, "a") # This is the company name html element
+        link = a.get_attribute("href") + "/filing-history" # This creates the link to that company's filing history
         company_pair = [a.text, link]
 
         links.append(company_pair)
@@ -43,7 +46,7 @@ def company_search_results(company_string):
 
 
 # Functionality to download and save the PDFs for those companies.
-def company_reports_download(company_link, company_name, save_location):
+def company_download_links(company_link, company_name, save_location):
     options.add_experimental_option('prefs', {
 "download.default_directory": save_location, #Change default directory for downloads
 "download.prompt_for_download": False, #To auto download the file
@@ -63,11 +66,14 @@ def company_reports_download(company_link, company_name, save_location):
 
     filingTable = driver.find_element(By.ID, "fhTable")
     rows = filingTable.find_elements(By.CSS_SELECTOR, "tr")
+    starting_year_string = rows[1].find_element(By.XPATH, "./td[1]").text
+    starting_year = datetime.strptime(starting_year_string, '%d %b %Y').year
 
     download_links = []
+    local_PDF_links = []
 
 # Iterate over the rows, skipping the first row (if it contains headers)
-    for row in rows[1:5]:
+    for row in rows[1:6]:
         try:
             # Find the element with class "filing-type" and text "AA" within the current row
             account = row.find_element(By.XPATH, ".//td[@class='filing-type sft-toggled']")
@@ -83,10 +89,31 @@ def company_reports_download(company_link, company_name, save_location):
         except Exception as e:
             print("Error:", e)
 
+    print("scraper line 92: printing account links: ")
+    print(download_links)
+    for link in download_links:
+        dlink = link.replace("download=0", "download=1")
+        download_driver = webdriver.Chrome(options= options)
+        print("Downloading file from " + dlink)
+        
+          # Use requests to download the file
+        response = requests.get(dlink)
+        filename = company_name + str(starting_year) + '.pdf'
+        pdf_path = os.path.join(save_location, filename)
+
+        # Write the content to a file
+        with open(pdf_path, 'wb') as file:
+            file.write(response.content)
+
+        local_PDF_links.append(pdf_path)
+        download_driver.quit()
+        starting_year = starting_year - 1
+
 
     driver.quit()
+    GV.append_local_PDF_links(local_PDF_links)
 
-    return download_links
+    return local_PDF_links
 
 
 
