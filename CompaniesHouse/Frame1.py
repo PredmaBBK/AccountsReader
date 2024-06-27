@@ -14,7 +14,7 @@ def Frame1(root_window):
     
 
     frame1 = Frame(root_window)
-    frame1.grid(column=0, row=0, sticky=(N, W, E, S))
+    frame1.grid(column=0, row=0, sticky=(N, W, E))
 
     # Configuring the main window's grid
     root_window.columnconfigure(0, weight=1)
@@ -26,11 +26,16 @@ def Frame1(root_window):
 
     # Add a label to the top of the window
     label = Label(frame1, text="This program allows you to extract the data of a company from Companies House")
-    label.grid(column=0, row=0, columnspan=2, sticky=(W, E), pady=10)
+    label.grid(column=0, row=0, columnspan=2, sticky=(N, W, E))
+
+
+    # Add the search box and button to Frame1
+    search_frame = Frame(frame1)
+    search_frame.grid(column=0, row=0, sticky=(N, W, E))
 
     # Add the search box
-    search_entry = Entry(root_window, width=50, fg='grey')
-    search_entry.grid(column=0, row=1, columnspan=2, padx=10, pady=10)
+    search_entry = Entry(search_frame, width=50, fg='grey')
+    search_entry.grid(column=0, row=1, columnspan=2, sticky=(N))
 
     # Add the placeholder text functionality
     # Function to handle the search action
@@ -64,9 +69,11 @@ def Frame1(root_window):
     search_entry.insert(0, 'Enter a company name here')
     search_entry.bind('<FocusIn>', on_entry_click)
     search_entry.bind('<FocusOut>', on_focus_out)
-    search_button = Button(root_window, text="Search", command=search_action)
-    search_button.grid(row=1, column=1, padx=10, pady=10)
+    
 
+    # Add the search button
+    search_button = Button(search_frame, text="Search", command=search_action)
+    search_button.grid(row=1, column=1, padx=10, pady=10)
 
 
 
